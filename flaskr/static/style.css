@@ -9,6 +9,9 @@ h1 {
     color: #377ba8; 
     margin: 1rem 0; 
 }
+nav ul li span {
+    color: #ffffff;
+}
 nav ul li a { 
     background-color: #377ba8;
     color: #ffffff;
@@ -66,29 +69,51 @@ nav ul  {
     background: #cae6f6; 
     border: 1px solid #377ba8; 
 }
-.post > header { 
-    display: flex; 
-    align-items: flex-end; 
-    font-size: 0.85em; 
+.grid-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); /* Nombre de colonnes auto-ajusté */
+    gap: 1.5rem; /* Espacement entre les éléments */
+    margin-top: 1.5rem;
 }
-.post > header > div:first-of-type { 
-    flex: auto; 
+  
+.post {
+    background-color: #d2dee4;
+    border-radius: 10px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.25);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
 }
-.post > header h1 { 
-    font-size: 1.5em; 
-    margin-bottom: 0;
+  
+.post header {
+    margin-bottom: 1rem;
 }
-.post .about { 
-    color: slategray; 
-    font-style: italic; 
+  
+.post h1 {
+    font-size: 1.3rem;
+    margin: 0;
 }
-.post .body { 
-    white-space: pre-line; 
+  
+.post .about {
+    font-size: 0.85em;
+    color: #777;
 }
-.content:last-child { 
-    margin-bottom: 0; 
+  
+.post .body {
+    color: #333;
+    font-size: 1em;
+    white-space: pre-line;
 }
-
+.post img {
+    border-radius: 10px;
+}
+@media (max-width: 768px) {
+    .grid-container {
+      grid-template-columns: repeat(auto-fill, minmax(100%, 1fr)); /* Sur petits écrans, une seule colonne */
+    }
+}
+  
 .content form { 
     margin: 1em auto;
     display: flex; 
@@ -126,5 +151,20 @@ input[type=submit] {
 }
 input[type=submit]:hover {
     background-color: #3495d6;
+    color: #fff;
+}
+.action{
+    background-color: #696969;
+    color: #ffffff;
+    padding: 0.75rem 1rem;
+    font-weight: bold;
+    border-radius: 20px;
+    text-decoration: none;
+    transition: background-color 0.3s ease, color 0.3s ease;
+    box-shadow: 0 5px 5px rgba(155, 155, 155, 0.2);
+    margin: 0.5rem 0;
+}
+.action:hover {
+    background-color: #b1b1b1;
     color: #fff;
 }

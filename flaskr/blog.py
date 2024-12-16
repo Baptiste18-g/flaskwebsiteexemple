@@ -2,22 +2,44 @@ from flask import (
     Blueprint, flash, g, redirect, render_template, request, url_for
 )
 from werkzeug.exceptions import abort
+from werkzeug.utils import secure_filename
 
 from flaskr.auth import login_required
 from flaskr.db import get_db
-
+from flask import send_file
+import io
 bp = Blueprint('blog', __name__)
+ALLOWED_EXTENSIONS = {'jpg', 'jpeg', 'png', 'gif'}
 
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 @bp.route('/')
 def index():
     db = get_db()
-    posts = db.execute(
+    articles = db.execute(
         'SELECT p.id, title, body, created, author_id, username'
-        ' FROM post p JOIN user u ON p.author_id = u.id'
+        ' FROM article p JOIN user u ON p.author_id = u.id'
         ' ORDER BY created DESC'
     ).fetchall()
-    return render_template('blog/index.html', posts=posts)
+
+    result = []
+    for article in articles:
+
+        article_dict = dict(article)
+        article_id = article_dict['id']
+
+        image = db.execute(
+            'SELECT filename FROM image WHERE article_id = ?',
+            (article_id,)
+        ).fetchone()
+
+        article_dict['image'] = image['filename'] if image else None
+        result.append(article_dict)
+
+    return render_template('blog/index.html', articles=result)
+
+
 
 @bp.route('/create', methods=('GET', 'POST'))
 @login_required
@@ -25,45 +47,64 @@ def create():
     if request.method == 'POST':
         title = request.form['title']
         body = request.form['body']
+        image = request.files.get('image')
         error = None
 
         if not title:
             error = 'Title is required.'
+        elif not body:
+            error = 'Body is required.'
+        elif image and not allowed_file(image.filename):
+            error = 'Invalid image file format.'
 
         if error is not None:
             flash(error)
         else:
+
             db = get_db()
-            db.execute(
-                'INSERT INTO post (title, body, author_id)'
-                ' VALUES (?, ?, ?)',
+            cursor = db.cursor()
+            cursor.execute(
+                'INSERT INTO article (title, body, author_id) VALUES (?, ?, ?)',
                 (title, body, g.user['id'])
             )
+            article_id = cursor.lastrowid
             db.commit()
+
+            if image:
+
+                filename = secure_filename(image.filename)
+                image_data = image.read()
+
+                cursor.execute(
+                    'INSERT INTO image (article_id, filename, data) VALUES (?, ?, ?)',
+                    (article_id, filename, image_data)
+                )
+                db.commit()
+
             return redirect(url_for('blog.index'))
 
     return render_template('blog/create.html')
 
-def get_post(id, check_author=True):
-    post = get_db().execute(
+def get_article(id, check_author=True):
+    article = get_db().execute(
         'SELECT p.id, title, body, created, author_id, username'
-        ' FROM post p JOIN user u ON p.author_id = u.id'
+        ' FROM article p JOIN user u ON p.author_id = u.id'
         ' WHERE p.id = ?',
         (id,)
     ).fetchone()
 
-    if post is None:
-        abort(404, f"Post id {id} doesn't exist.")
+    if article is None:
+        abort(404, f"Article id {id} doesn't exist.")
 
-    if check_author and post['author_id'] != g.user['id']:
+    if check_author and article['author_id'] != g.user['id']:
         abort(403)
 
-    return post
+    return article
 
 @bp.route('/<int:id>/update', methods=('GET', 'POST'))
 @login_required
 def update(id):
-    post = get_post(id)
+    article = get_article(id)
 
     if request.method == 'POST':
         title = request.form['title']
@@ -78,20 +119,32 @@ def update(id):
         else:
             db = get_db()
             db.execute(
-                'UPDATE post SET title = ?, body = ?'
+                'UPDATE article SET title = ?, body = ?'
                 ' WHERE id = ?',
                 (title, body, id)
             )
             db.commit()
             return redirect(url_for('blog.index'))
 
-    return render_template('blog/update.html', post=post)
+    return render_template('blog/update.html', article=article)
 
 @bp.route('/<int:id>/delete', methods=('POST',))
 @login_required
 def delete(id):
-    get_post(id)
+    get_article(id)
     db = get_db()
-    db.execute('DELETE FROM post WHERE id = ?', (id,))
+    db.execute('DELETE FROM article WHERE id = ?', (id,))
     db.commit()
     return redirect(url_for('blog.index'))
+@bp.route('/image/<image_filename>')
+def show_image(image_filename):
+    db = get_db()
+    image_data = db.execute(
+        'SELECT data FROM image WHERE filename = ?',
+        (image_filename,)
+    ).fetchone()
+
+    if image_data is None:
+        abort(404, f"Image {image_filename} not found.")
+
+    return send_file(io.BytesIO(image_data['data']), mimetype='image/jpeg')
