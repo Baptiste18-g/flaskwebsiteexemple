@@ -175,7 +175,7 @@ def add_to_cart(id):
         )
 
     db.commit()
-    flash("Article ajouté au panier!")
+    flash("Article ajouté au panier !")
     return redirect(url_for('blog.index'))
 
 @bp.route('/cart')
@@ -200,7 +200,7 @@ def remove_from_cart(id):
         (g.user['id'], id)
     )
     db.commit()
-    flash("Article retiré du panier!")
+    flash("Article retiré du panier !")
     return redirect(url_for('blog.cart'))
 
 @bp.route('/checkout', methods=('POST',))
@@ -214,5 +214,37 @@ def checkout():
     db.execute('DELETE FROM cart WHERE user_id = ?', (g.user['id'],))
     db.commit()
 
-    flash("Commande réussie!")
+    flash("Commande réussie !")
     return redirect(url_for('blog.index'))
+
+@bp.route('/update_quantity/<int:id>/<action>', methods=['GET', 'POST'])
+@login_required
+def update_quantity(id, action):
+    # Récupérer l'article correspondant à l'id
+    db = get_db()
+    item = db.execute(
+        'SELECT * FROM cart WHERE article_id = ? AND user_id = ?',
+        (id, g.user['id'])
+    ).fetchone()
+
+    if item is None:
+        abort(404, "Item not found in cart.")
+
+    # Vérifier l'action (augmenter ou diminuer la quantité)
+    if action == 'increase':
+        new_quantity = item['quantity'] + 1
+    elif action == 'decrease' and item['quantity'] > 1:
+        new_quantity = item['quantity'] - 1
+    else:
+        flash("Quantity cannot be less than 1.")
+        return redirect(url_for('blog.cart'))  # Retourner à la page d'index si l'action est invalide
+
+    # Mettre à jour la quantité dans la base de données
+    db.execute(
+        'UPDATE cart SET quantity = ? WHERE article_id = ? AND user_id = ?',
+        (new_quantity, id, g.user['id'])
+    )
+    db.commit()
+
+    # Rediriger vers la page de panier après la mise à jour
+    return redirect(url_for('blog.cart'))

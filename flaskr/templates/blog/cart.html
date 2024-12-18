@@ -6,18 +6,22 @@
 <h2>Votre Panier</h2>
 
 {% if cart_items %}
-  <ul>
-    {% for item in cart_items %}
-      <li>
-        {{ item.title }} - Quantité : {{ item.quantity }}
-        <form method="post" action="{{ url_for('blog.remove_from_cart', id=item.id) }}">
-          <button type="submit">Retirer</button>
-        </form>
-      </li>
-    {% endfor %}
-  </ul>
+  {% for item in cart_items %}
+  <div class="list_cart">
+    <h1>{{ item.title }}</h1>
+    <div class="quantite">
+      <p class="p1">Quantité : </p>
+      <a class="a1" href="{{ url_for('blog.update_quantity', id=item.id, action='decrease') }}"><i class="fa-solid fa-minus"></i></a>
+      <p class="p2">{{ item.quantity }}</p>
+      <a class="a2" href="{{ url_for('blog.update_quantity', id=item.id, action='increase') }}"><i class="fa-solid fa-plus"></i></a>
+    </div>
+    <form method="post" action="{{ url_for('blog.remove_from_cart', id=item.id) }}">
+      <button class="action_remove" type="submit">Retirer <i class="fa-solid fa-xmark"></i></button>
+    </form>
+  </div>
+  {% endfor %}
   <form method="post" action="{{ url_for('blog.checkout') }}">
-    <button type="submit">Passer à la caisse</button>
+    <button class="action" type="submit">Passer à la caisse</button>
   </form>
 {% else %}
   <p>Votre panier est vide.</p>
