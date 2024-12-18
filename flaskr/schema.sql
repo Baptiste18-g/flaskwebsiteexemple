@@ -21,3 +21,11 @@ CREATE TABLE IF NOT EXISTS image (
   data BLOB NOT NULL,
   FOREIGN KEY (article_id) REFERENCES article (id)
 );
+CREATE TABLE IF NOT EXISTS cart (
+    user_id INTEGER,
+    article_id INTEGER,
+    quantity INTEGER DEFAULT 1,
+    PRIMARY KEY (user_id, article_id),
+    FOREIGN KEY (user_id) REFERENCES user(id),
+    FOREIGN KEY (article_id) REFERENCES article(id)
+);

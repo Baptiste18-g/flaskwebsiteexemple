@@ -148,3 +148,71 @@ def show_image(image_filename):
         abort(404, f"Image {image_filename} not found.")
 
     return send_file(io.BytesIO(image_data['data']), mimetype='image/jpeg')
+
+@bp.route('/add_to_cart/<int:id>', methods=('POST',))
+@login_required
+def add_to_cart(id):
+    db = get_db()
+
+    # Vérifier si l'article est déjà dans le panier
+    cart_item = db.execute(
+        'SELECT quantity FROM cart WHERE user_id = ? AND article_id = ?',
+        (g.user['id'], id)
+    ).fetchone()
+
+    if cart_item:
+        # Si l'article existe déjà dans le panier, augmenter la quantité
+        new_quantity = cart_item['quantity'] + 1
+        db.execute(
+            'UPDATE cart SET quantity = ? WHERE user_id = ? AND article_id = ?',
+            (new_quantity, g.user['id'], id)
+        )
+    else:
+        # Sinon, ajouter l'article au panier avec une quantité de 1
+        db.execute(
+            'INSERT INTO cart (user_id, article_id, quantity) VALUES (?, ?, ?)',
+            (g.user['id'], id, 1)
+        )
+
+    db.commit()
+    flash("Article ajouté au panier!")
+    return redirect(url_for('blog.index'))
+
+@bp.route('/cart')
+@login_required
+def cart():
+    db = get_db()
+    cart_items = db.execute(
+        'SELECT a.id, a.title, a.body, c.quantity '
+        'FROM cart c JOIN article a ON c.article_id = a.id '
+        'WHERE c.user_id = ?',
+        (g.user['id'],)
+    ).fetchall()
+
+    return render_template('blog/cart.html', cart_items=cart_items)
+
+@bp.route('/remove_from_cart/<int:id>', methods=('POST',))
+@login_required
+def remove_from_cart(id):
+    db = get_db()
+    db.execute(
+        'DELETE FROM cart WHERE user_id = ? AND article_id = ?',
+        (g.user['id'], id)
+    )
+    db.commit()
+    flash("Article retiré du panier!")
+    return redirect(url_for('blog.cart'))
+
+@bp.route('/checkout', methods=('POST',))
+@login_required
+def checkout():
+    db = get_db()
+
+    # Traiter la commande (par exemple, créer un enregistrement dans la table "orders")
+
+    # Supprimer tous les articles du panier après la commande
+    db.execute('DELETE FROM cart WHERE user_id = ?', (g.user['id'],))
+    db.commit()
+
+    flash("Commande réussie!")
+    return redirect(url_for('blog.index'))

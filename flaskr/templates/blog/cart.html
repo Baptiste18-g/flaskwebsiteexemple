@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+
+{% block title %}Votre Panier{% endblock %}
+
+{% block content %}
+<h2>Votre Panier</h2>
+
+{% if cart_items %}
+  <ul>
+    {% for item in cart_items %}
+      <li>
+        {{ item.title }} - Quantité : {{ item.quantity }}
+        <form method="post" action="{{ url_for('blog.remove_from_cart', id=item.id) }}">
+          <button type="submit">Retirer</button>
+        </form>
+      </li>
+    {% endfor %}
+  </ul>
+  <form method="post" action="{{ url_for('blog.checkout') }}">
+    <button type="submit">Passer à la caisse</button>
+  </form>
+{% else %}
+  <p>Votre panier est vide.</p>
+{% endif %}
+{% endblock %}

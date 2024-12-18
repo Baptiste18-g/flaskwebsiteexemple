@@ -1,11 +1,15 @@
 <!doctype html>
 <title>{% block title %}{% endblock %} - Flaskr</title>
 <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+<script src="https://kit.fontawesome.com/3979d6d647.js" crossorigin="anonymous"></script>
 <nav>
   <h1>Flaskr</h1>
   <ul>
     {% if g.user %}
       <li><span>{{ g.user['username'] }}</span>
+      <li><a href="{{ url_for('blog.cart')}}" target="_blank" aria-label="Cart-shopping">
+            <i class="fa-solid fa-cart-shopping"></i>
+          </a>
       <li><a href="{{ url_for('auth.logout') }}">Log Out</a>
     {% else %}
       <li><a href="{{ url_for('auth.register') }}">Register</a>
