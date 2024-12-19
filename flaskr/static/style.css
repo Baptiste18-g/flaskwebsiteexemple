@@ -6,7 +6,7 @@ body {
     background: white; 
 }
 h1 { 
-    color: #377ba8; 
+    color: #000000; 
     margin: 1rem 0; 
 }
 nav ul li span {
@@ -25,6 +25,12 @@ nav ul li a {
 nav ul li a:hover {
     background-color: #3495d6;
     color: #fff;
+}
+nav ul li a span {
+    display: none;
+}
+nav ul li a:hover span {
+    display: inline;
 }
 hr { 
     border: none; 
@@ -94,8 +100,10 @@ nav ul  {
 }
   
 .post h1 {
+    color: #000;
     font-size: 1.3rem;
     margin: 0;
+    padding: 1rem 0;
 }
   
 .post .about {
@@ -225,6 +233,7 @@ input[type=submit]:hover {
     background-color: #d2dee4;
     border-radius: 10px;
     padding: 0 1.5rem;
+    margin: 1rem 0;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.25);
     display: flex;
     flex-direction: row;
@@ -238,6 +247,9 @@ input[type=submit]:hover {
 .quantite{
     display: flex;
     align-items: center;
+    justify-content: center;
+    position: absolute;
+    left: 45%;
 }
 .quantite .a1{
     border-top-left-radius: 10px;
