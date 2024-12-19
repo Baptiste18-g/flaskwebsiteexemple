@@ -7,6 +7,7 @@ from werkzeug.utils import secure_filename
 from flaskr.auth import login_required
 from flaskr.db import get_db
 from flask import send_file
+from PIL import Image
 import io
 bp = Blueprint('blog', __name__)
 ALLOWED_EXTENSIONS = {'jpg', 'jpeg', 'png', 'gif'}
@@ -60,7 +61,6 @@ def create():
         if error is not None:
             flash(error)
         else:
-
             db = get_db()
             cursor = db.cursor()
             cursor.execute(
@@ -71,20 +71,39 @@ def create():
             db.commit()
 
             if image:
-
-                filename = secure_filename(image.filename)
+                # Charger l'image avec Pillow
                 image_data = image.read()
+                image_stream = io.BytesIO(image_data)
+                img = Image.open(image_stream)
 
+                # Recadrer l'image en carré
+                width, height = img.size
+                new_size = min(width, height)
+                left = (width - new_size) / 2
+                top = (height - new_size) / 2
+                right = (width + new_size) / 2
+                bottom = (height + new_size) / 2
+
+                img = img.crop((left, top, right, bottom))
+
+                # Sauvegarder l'image recadrée dans un buffer
+                img_byte_arr = io.BytesIO()
+                img.save(img_byte_arr, format='JPEG')  # Sauvegarder l'image en format JPEG
+                img_byte_arr.seek(0)
+
+                # Générer un nom sécurisé pour l'image
+                filename = secure_filename(image.filename)
+
+                # Insérer l'image recadrée dans la base de données
                 cursor.execute(
                     'INSERT INTO image (article_id, filename, data) VALUES (?, ?, ?)',
-                    (article_id, filename, image_data)
+                    (article_id, filename, img_byte_arr.read())
                 )
                 db.commit()
 
             return redirect(url_for('blog.index'))
 
     return render_template('blog/create.html')
-
 def get_article(id, check_author=True):
     article = get_db().execute(
         'SELECT p.id, title, body, created, author_id, username'

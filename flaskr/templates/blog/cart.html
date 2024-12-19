@@ -23,6 +23,10 @@
   <form method="post" action="{{ url_for('blog.checkout') }}">
     <button class="action" type="submit">Passer à la caisse</button>
   </form>
+  <div class="payement_methode">
+    <i class="fa-brands fa-paypal"></i>
+    <i class="fa-solid fa-credit-card"></i>
+  </div>
 {% else %}
   <p>Votre panier est vide.</p>
 {% endif %}

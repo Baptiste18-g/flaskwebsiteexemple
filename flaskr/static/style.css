@@ -42,6 +42,7 @@ nav h1 {
 }
 nav h1 a { 
     text-decoration: none;
+    color: #fff;
 }
 nav ul  { 
     display: flex; 
@@ -271,4 +272,8 @@ input[type=submit]:hover {
 }
 .quantite .a2:hover{
     background-color: #c5c5c5;
+}
+.payement_methode {
+    font-size: 2rem;
+    text-align: center;
 }
