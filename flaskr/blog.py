@@ -19,7 +19,7 @@ def allowed_file(filename):
 def index():
     db = get_db()
     articles = db.execute(
-        'SELECT p.id, title, body, created, author_id, username'
+        'SELECT p.id, title, body, rating, created, author_id, username'
         ' FROM article p JOIN user u ON p.author_id = u.id'
         ' ORDER BY created DESC'
     ).fetchall()
@@ -40,6 +40,25 @@ def index():
 
     return render_template('blog/index.html', articles=result)
 
+@bp.route('/rate_article/<int:id>', methods=['POST'])
+@login_required
+def rate_article(id):
+    rating = request.form['rating']
+    if not (1 <= int(rating) <= 5):  # Vérifie que la note est entre 1 et 5
+        flash('La note doit être comprise entre 1 et 5.', 'error')
+        return redirect(url_for('blog.index'))
+
+    db = get_db()
+
+    # Mettre à jour la note dans la base de données
+    db.execute(
+        'UPDATE article SET rating = ? WHERE id = ?',
+        (rating, id)
+    )
+    db.commit()
+
+    flash('Merci pour votre note !', 'success')
+    return redirect(url_for('blog.index'))
 
 
 @bp.route('/create', methods=('GET', 'POST'))

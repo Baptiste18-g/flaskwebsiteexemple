@@ -289,3 +289,11 @@ input[type=submit]:hover {
     font-size: 2rem;
     text-align: center;
 }
+.note {
+    display: flex;
+}
+.note button {
+    background-color: rgba(0, 0, 0, 0);
+    border:rgb(0, 0, 0, 0);
+    font-size: 1rem;
+}

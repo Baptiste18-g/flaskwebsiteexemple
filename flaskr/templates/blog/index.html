@@ -22,6 +22,29 @@
         </header>
 
         <p class="body">{{ article['body'] }}</p>
+        <div class="rating">
+          {% for i in range(5) %}
+            {% if i < article['rating'] %}
+              <i class="fa fa-star"></i>
+            {% else %}
+              <i class="fa fa-star-o"></i>
+            {% endif %}
+          {% endfor %}
+        </div>
+        {% if g.user %}
+          <form method="POST" action="{{ url_for('blog.rate_article', id=article['id']) }}">
+            <div class="note">
+              <label for="rating">Votre note :</label>
+              <button type="submit" name="rating" value="1"><i class="fa fa-star-o"></i></button>
+              <button type="submit" name="rating" value="2"><i class="fa fa-star-o"></i></button>
+              <button type="submit" name="rating" value="3"><i class="fa fa-star-o"></i></button>
+              <button type="submit" name="rating" value="4"><i class="fa fa-star-o"></i></button>
+              <button type="submit" name="rating" value="5"><i class="fa fa-star-o"></i></button>
+            </div>
+          </form>
+        {% else %}
+          <p><a href="{{ url_for('auth.login') }}">Log in</a> to rate the article.</p>
+        {% endif %}
 
         {% if g.user %}
           <form method="post" action="{{ url_for('blog.add_to_cart', id=article['id']) }}">
